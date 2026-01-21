@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { ChevronRight, ArrowRight, Flame, Focus as Lotus, BookOpen, Sparkles, Gift, Calendar } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
 // Icon mapping for services
@@ -16,7 +16,7 @@ const iconMap: Record<string, any> = {
   'Planning': Calendar,
 }
 
-export default function ServicesPage() {
+function ServicesContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [categories, setCategories] = useState<string[]>(['All'])
@@ -252,5 +252,21 @@ export default function ServicesPage() {
 
       <Footer />
     </div>
+  )
+}
+
+export default function ServicesPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+        <Footer />
+      </div>
+    }>
+      <ServicesContent />
+    </Suspense>
   )
 }
