@@ -149,24 +149,22 @@ export function AddPujaForm() {
     setUploadType(type)
 
     try {
-      // Create form data for Cloudinary upload
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'your_upload_preset')
-      formData.append('folder', 'panditji')
+      // Create form data for our local API upload
+      const uploadFormData = new FormData()
+      uploadFormData.append('file', file)
+      uploadFormData.append('folder', 'panditji')
+      uploadFormData.append('resource_type', type === 'image' ? 'image' : 'video')
 
-      // Upload to Cloudinary
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${type === 'image' ? 'image' : 'video'
-        }/upload`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      )
+      // Upload to our internal API route
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      })
 
       if (!response.ok) {
-        throw new Error('Upload failed')
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Cloudinary upload error:', errorData)
+        throw new Error(errorData.error?.message || `Upload failed with status ${response.status}`)
       }
 
       const data = await response.json()
@@ -177,10 +175,19 @@ export function AddPujaForm() {
         [type]: data.secure_url,
       }))
 
-      alert(`${type === 'image' ? 'Image' : 'Video'} uploaded successfully!`)
-    } catch (error) {
+      alert(`✅ ${type === 'image' ? 'Image' : 'Video'} uploaded successfully!`)
+    } catch (error: any) {
       console.error('Upload error:', error)
-      alert(`Failed to upload ${type}. Please try again.`)
+
+      // Provide detailed error message
+      let errorMessage = `Failed to upload ${type}.`
+      if (error.message.includes('Invalid')) {
+        errorMessage += '\n\nPlease create an unsigned upload preset in Cloudinary:\n1. Go to Settings → Upload\n2. Add upload preset\n3. Set signing mode to "Unsigned"\n4. Update .env with preset name'
+      } else {
+        errorMessage += `\n\nError: ${error.message}`
+      }
+
+      alert(`❌ ${errorMessage}`)
     } finally {
       setIsUploading(false)
       setUploadType(null)

@@ -29,21 +29,41 @@ function savePujasToStorage(pujas: any[]): void {
   }
 }
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params
+    const pujas = getPujasFromStorage()
+    const puja = pujas.find((p: any) => p.id === id)
+
+    if (!puja) {
+      return NextResponse.json({ error: 'Puja not found' }, { status: 404 })
+    }
+
+    return NextResponse.json(puja)
+  } catch (error) {
+    console.error('Error fetching puja:', error)
+    return NextResponse.json({ error: 'Failed to fetch puja' }, { status: 500 })
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const { id } = params
-    
+
     // TODO: Replace with actual database delete
     // Example with MongoDB:
     // const result = await db.collection('pujas').deleteOne({ _id: new ObjectId(id) })
-    
+
     const pujas = getPujasFromStorage()
     const filtered = pujas.filter((p: any) => p.id !== id)
     savePujasToStorage(filtered)
-    
+
     return NextResponse.json({ message: 'Puja deleted successfully' })
   } catch (error) {
     console.error('Error deleting puja:', error)

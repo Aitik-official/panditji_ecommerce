@@ -6,7 +6,7 @@ import { Footer } from '@/components/footer'
 import { CalendarWidget } from '@/components/calendar-widget'
 import { WhatsAppButton } from '@/components/whatsapp-button'
 import { ArrowRight, Phone, Calendar, Sparkles, CheckCircle2, Star, Flame, Heart, Shield, Clock, Users, Award, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const festivalServices = [
   {
@@ -152,21 +152,64 @@ const chakraBalancing = [
 
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [pujas, setPujas] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchPujas()
+  }, [])
+
+  const fetchPujas = async () => {
+    try {
+      const response = await fetch('/api/pujas')
+      if (response.ok) {
+        const data = await response.json()
+        setPujas(data)
+      }
+    } catch (error) {
+      console.error('Error fetching pujas:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Derive sections from dynamic data
+  const festivalServices = pujas.filter(p => p.category === 'Festival' || p.category === 'Pujas & Vrat').slice(0, 4)
+  const latestPujas = pujas.slice(-5).reverse()
+  const pujaVratServices = pujas.filter(p => p.category === 'Pujas & Vrat').slice(0, 4)
+  const chakraBalancing = pujas.filter(p => p.category === 'Chakra Balancing').slice(0, 6)
+
+  // Use fallback data if API returns empty during initial setup
+  const displayFestivalServices = festivalServices.length > 0 ? festivalServices : [
+    { id: '1', name: 'Diwali Puja', price: 8500, image: '/placeholder.jpg', category: 'Festival' },
+    { id: '2', name: 'New Year Puja', price: 5500, image: '/placeholder.jpg', category: 'Festival' },
+    { id: '3', name: 'Kuber Puja', price: 8500, image: '/placeholder.jpg', category: 'Festival' },
+    { id: '4', name: 'Mahakali Puja', price: 9500, image: '/placeholder.jpg', category: 'Festival' },
+  ]
+
+  const displayLatestPujas = latestPujas.length > 0 ? latestPujas : [
+    { id: '9', name: 'Pradosh Vrat Pooja', price: 5000, image: '/placeholder.jpg' },
+    { id: '10', name: 'Akarshan MahaPuja', price: 11511, image: '/placeholder.jpg' },
+    { id: '11', name: 'NavaDurga Puja', price: 27500, image: '/placeholder.jpg' },
+    { id: '12', name: 'Kaal Sarp Dosh', price: 10500, image: '/placeholder.jpg' },
+    { id: '13', name: 'Bal Gopal puja', price: 8500, image: '/placeholder.jpg' },
+  ]
+
 
   const getCurrentCards = () => {
-    const total = festivalServices.length
-    const largeCard = festivalServices[currentIndex]
-    const smallCard1 = festivalServices[(currentIndex + 1) % total]
-    const smallCard2 = festivalServices[(currentIndex + 2) % total]
+    const total = displayFestivalServices.length
+    const largeCard = displayFestivalServices[currentIndex]
+    const smallCard1 = displayFestivalServices[(currentIndex + 1) % total]
+    const smallCard2 = displayFestivalServices[(currentIndex + 2) % total]
     return { largeCard, smallCard1, smallCard2 }
   }
 
   const nextCards = () => {
-    setCurrentIndex((prev) => (prev + 1) % festivalServices.length)
+    setCurrentIndex((prev) => (prev + 1) % displayFestivalServices.length)
   }
 
   const prevCards = () => {
-    setCurrentIndex((prev) => (prev - 1 + festivalServices.length) % festivalServices.length)
+    setCurrentIndex((prev) => (prev - 1 + displayFestivalServices.length) % displayFestivalServices.length)
   }
 
   const { largeCard, smallCard1, smallCard2 } = getCurrentCards()
@@ -297,8 +340,14 @@ export default function Home() {
                   className="group flex-shrink-0 w-72 md:w-auto bg-white dark:bg-card rounded-xl border-2 border-border/50 overflow-hidden card-elevated hover:border-primary/70 hover:shadow-xl transition-all duration-300 flex flex-col"
                 >
                   <div className="relative h-52 bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 flex items-center justify-center overflow-hidden">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,200,0,0.1),transparent)]" />
-                    <div className="text-7xl opacity-30 group-hover:scale-110 transition-transform duration-300">🕉️</div>
+                    {service.image && service.image !== '/placeholder.jpg' ? (
+                      <img src={service.image} alt={service.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                    ) : (
+                      <>
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,200,0,0.1),transparent)]" />
+                        <div className="text-7xl opacity-30 group-hover:scale-110 transition-transform duration-300">🕉️</div>
+                      </>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                   <div className="p-6 flex-1 flex flex-col bg-white dark:bg-card">
@@ -386,7 +435,11 @@ export default function Home() {
                       Featured
                     </div>
                     <div className="relative h-64 flex items-center justify-center p-8">
-                      <div className="text-9xl opacity-20 group-hover:opacity-30 transition-opacity">🕉️</div>
+                      {largeCard.image && largeCard.image !== '/placeholder.jpg' ? (
+                        <img src={largeCard.image} alt={largeCard.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                      ) : (
+                        <div className="text-9xl opacity-20 group-hover:opacity-30 transition-opacity">🕉️</div>
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
                     </div>
                     <div className="p-6 bg-background/80 backdrop-blur-sm">
@@ -414,7 +467,11 @@ export default function Home() {
                     className="group bg-white dark:bg-card rounded-2xl border-2 border-border/50 overflow-hidden card-elevated hover:border-primary/50 hover:shadow-xl transition-all duration-300 flex flex-col"
                   >
                     <div className="relative h-40 bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 flex items-center justify-center overflow-hidden">
-                      <div className="text-6xl opacity-30 group-hover:scale-110 transition-transform duration-300">🕉️</div>
+                      {smallCard1.image && smallCard1.image !== '/placeholder.jpg' ? (
+                        <img src={smallCard1.image} alt={smallCard1.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                      ) : (
+                        <div className="text-6xl opacity-30 group-hover:scale-110 transition-transform duration-300">🕉️</div>
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <div className="p-5 flex-1 flex flex-col">
@@ -444,7 +501,11 @@ export default function Home() {
                     className="group bg-white dark:bg-card rounded-2xl border-2 border-border/50 overflow-hidden card-elevated hover:border-primary/50 hover:shadow-xl transition-all duration-300 flex flex-col"
                   >
                     <div className="relative h-40 bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 flex items-center justify-center overflow-hidden">
-                      <div className="text-6xl opacity-30 group-hover:scale-110 transition-transform duration-300">🕉️</div>
+                      {smallCard2.image && smallCard2.image !== '/placeholder.jpg' ? (
+                        <img src={smallCard2.image} alt={smallCard2.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                      ) : (
+                        <div className="text-6xl opacity-30 group-hover:scale-110 transition-transform duration-300">🕉️</div>
+                      )}
                       <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <div className="p-5 flex-1 flex flex-col">
@@ -561,8 +622,14 @@ export default function Home() {
                     </div>
                   )}
                   <div className={`relative ${isLarge ? 'h-56' : 'h-44'} bg-gradient-to-br from-accent/10 via-primary/10 to-accent/5 flex items-center justify-center overflow-hidden`}>
-                    <div className="text-8xl opacity-20 group-hover:scale-110 transition-transform duration-300">🙏</div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
+                    {service.image && service.image !== '/placeholder.jpg' ? (
+                      <img src={service.image} alt={service.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                    ) : (
+                      <>
+                        <div className="text-8xl opacity-20 group-hover:scale-110 transition-transform duration-300">🙏</div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
+                      </>
+                    )}
                   </div>
                   <div className={`${isLarge ? 'p-6' : 'p-5'} bg-white dark:bg-card`}>
                     <h3 className={`font-bold ${isLarge ? 'text-xl' : 'text-lg'} mb-3 text-gray-900 dark:text-primary group-hover:text-accent transition-colors line-clamp-2`}>
@@ -608,8 +675,14 @@ export default function Home() {
                 className="group bg-white dark:bg-card rounded-xl border-2 border-border/50 overflow-hidden card-elevated hover:border-primary/70 hover:shadow-xl transition-all duration-300 flex flex-col"
               >
                 <div className="relative h-48 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-indigo-500/10 flex items-center justify-center overflow-hidden">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(147,51,234,0.15),transparent)]" />
-                  <div className="text-7xl opacity-30 group-hover:scale-110 transition-transform duration-300">🌀</div>
+                  {service.image && service.image !== '/placeholder.jpg' ? (
+                    <img src={service.image} alt={service.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(147,51,234,0.15),transparent)]" />
+                      <div className="text-7xl opacity-30 group-hover:scale-110 transition-transform duration-300">🌀</div>
+                    </>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <div className="p-6 flex-1 flex flex-col bg-white dark:bg-card">
