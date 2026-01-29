@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/mongodb'
 import Puja from '@/models/Puja'
-import { defaultPujas } from '@/lib/seed-data'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,14 +8,8 @@ export async function GET() {
   try {
     await dbConnect()
 
-    let pujas = await Puja.find({}).sort({ createdAt: -1 })
-
-    // If no pujas exist, seed with defaults
-    if (pujas.length === 0) {
-      console.log('No pujas found, seeding from defaults...')
-      await Puja.insertMany(defaultPujas)
-      pujas = await Puja.find({}).sort({ createdAt: -1 })
-    }
+    const pujas = await Puja.find({}).sort({ createdAt: -1 })
+    return NextResponse.json(pujas)
 
     return NextResponse.json(pujas)
   } catch (error) {

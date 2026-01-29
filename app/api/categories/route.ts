@@ -1,26 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/mongodb'
 import Category from '@/models/Category'
-import { defaultCategories } from '@/lib/seed-data'
 
 export async function GET() {
   try {
     await dbConnect()
 
-    let categories = await Category.find({}).sort({ name: 1 })
-
-    // If no categories exist, seed with defaults
-    if (categories.length === 0) {
-      console.log('No categories found, seeding from defaults...')
-      await Category.insertMany(defaultCategories)
-      categories = await Category.find({}).sort({ name: 1 })
-    }
-
+    const categories = await Category.find({}).sort({ name: 1 })
     return NextResponse.json(categories)
   } catch (error) {
     console.error('Error fetching categories:', error)
-    // Return defaults even on error so site still works
-    return NextResponse.json(defaultCategories)
+    return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 })
   }
 }
 
