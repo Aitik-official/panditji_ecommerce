@@ -205,7 +205,6 @@ export default function Home() {
                           <div className="text-7xl opacity-30 group-hover:scale-110 transition-transform duration-300">🕉️</div>
                         </>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <div className="p-6 flex-1 flex flex-col bg-white dark:bg-card">
                       <h3 className="font-bold text-lg mb-3 text-primary group-hover:text-accent transition-colors line-clamp-2 min-h-[3.5rem]">
