@@ -164,7 +164,11 @@ export default function Home() {
       const response = await fetch('/api/pujas')
       if (response.ok) {
         const data = await response.json()
-        setPujas(data)
+        const normalized = data.map((p: any) => ({
+          ...p,
+          id: p.id || p._id
+        }))
+        setPujas(normalized)
       }
     } catch (error) {
       console.error('Error fetching pujas:', error)
@@ -333,7 +337,7 @@ export default function Home() {
           {/* Horizontal Scrollable Cards */}
           <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
             <div className="flex gap-6 min-w-max md:min-w-0 md:grid md:grid-cols-2 lg:grid-cols-5">
-              {latestPujas.map((service) => (
+              {displayLatestPujas.map((service) => (
                 <Link
                   key={service.id}
                   href={`/puja/${service.id}`}

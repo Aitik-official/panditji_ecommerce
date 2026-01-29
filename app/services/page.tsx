@@ -81,7 +81,7 @@ function ServicesContent() {
         const data = await response.json()
         const categoryNames = ['All', ...data.map((cat: any) => cat.name)]
         setCategories(categoryNames)
-        
+
         // If category is set from URL, ensure it exists in categories
         const categoryParam = searchParams.get('category')
         if (categoryParam) {
@@ -114,7 +114,7 @@ function ServicesContent() {
         const data = await response.json()
         // Map pujas to services format with icons
         const services = data.map((puja: any) => ({
-          id: puja.id,
+          id: puja.id || puja._id,
           category: puja.category,
           name: puja.name,
           price: puja.price,
@@ -183,11 +183,10 @@ function ServicesContent() {
                   <button
                     key={cat}
                     onClick={() => handleCategoryChange(cat)}
-                    className={`px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition-all duration-300 ${
-                      selectedCategory === cat
+                    className={`px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition-all duration-300 ${selectedCategory === cat
                         ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg scale-105'
                         : 'bg-card text-muted-foreground hover:bg-primary/10 hover:text-primary border border-border hover:border-primary/50'
-                    }`}
+                      }`}
                   >
                     {cat}
                   </button>

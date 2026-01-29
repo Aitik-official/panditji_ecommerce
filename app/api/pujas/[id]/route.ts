@@ -9,11 +9,19 @@ export async function GET(
   try {
     await dbConnect()
     const { id } = params
+    console.log(`Fetching puja with ID: ${id}`)
 
     // Support both MongoDB ObjectId and the old string IDs during transition
     let puja = await Puja.findById(id).catch(() => null)
     if (!puja) {
+      console.log(`Puja not found by _id, trying custom 'id' field for: ${id}`)
       puja = await Puja.findOne({ id: id })
+    }
+
+    if (puja) {
+      console.log(`Successfully found puja: ${puja.name}`)
+    } else {
+      console.warn(`Puja NOT found for ID: ${id}`)
     }
 
     if (!puja) {

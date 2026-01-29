@@ -28,7 +28,10 @@ export default function PujaDetailPage() {
       const response = await fetch(`/api/pujas/${id}`)
       if (response.ok) {
         const data = await response.json()
-        setPuja(data)
+        setPuja({
+          ...data,
+          id: data.id || data._id
+        })
         if (data.japaOptions?.length > 0) {
           setSelectedJapa(data.japaOptions[0].value)
         }
