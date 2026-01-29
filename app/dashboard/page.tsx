@@ -16,14 +16,33 @@ export default function DashboardPage() {
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState<'add' | 'manage' | 'bookings' | 'categories'>('add')
 
+  const [stats, setStats] = useState({
+    totalPujas: 0,
+    totalBookings: 0,
+    totalRevenue: 0,
+  })
+
   useEffect(() => {
     // Check if user is already authenticated
     const authStatus = localStorage.getItem('dashboard_authenticated')
     if (authStatus === 'true') {
       setIsAuthenticated(true)
+      fetchStats()
     }
     setIsLoading(false)
   }, [])
+
+  const fetchStats = async () => {
+    try {
+      const response = await fetch('/api/stats')
+      if (response.ok) {
+        const data = await response.json()
+        setStats(data)
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error)
+    }
+  }
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,6 +52,7 @@ export default function DashboardPage() {
     if (username === 'admin_01' && password === 'admin@123') {
       setIsAuthenticated(true)
       localStorage.setItem('dashboard_authenticated', 'true')
+      fetchStats()
     } else {
       setError('Invalid username or password')
     }
@@ -136,13 +156,6 @@ export default function DashboardPage() {
     )
   }
 
-  // Mock stats - replace with actual data from API
-  const stats = {
-    totalPujas: 0,
-    totalBookings: 0,
-    totalRevenue: 0,
-  }
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header with Logout */}
@@ -166,7 +179,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-      
+
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Stats Cards */}
@@ -212,42 +225,38 @@ export default function DashboardPage() {
         <div className="flex gap-2 mb-6 border-b-2 border-gray-200 dark:border-gray-700 overflow-x-auto">
           <button
             onClick={() => setActiveTab('add')}
-            className={`px-6 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
-              activeTab === 'add'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-primary'
-            }`}
+            className={`px-6 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === 'add'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-primary'
+              }`}
           >
             Add New Puja
           </button>
           <button
             onClick={() => setActiveTab('manage')}
-            className={`px-6 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
-              activeTab === 'manage'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-primary'
-            }`}
+            className={`px-6 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === 'manage'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-primary'
+              }`}
           >
             Manage Pujas
           </button>
           <button
             onClick={() => setActiveTab('categories')}
-            className={`px-6 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 ${
-              activeTab === 'categories'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-primary'
-            }`}
+            className={`px-6 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap flex items-center gap-2 ${activeTab === 'categories'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-primary'
+              }`}
           >
             <Folder className="w-4 h-4" />
             Categories
           </button>
           <button
             onClick={() => setActiveTab('bookings')}
-            className={`px-6 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${
-              activeTab === 'bookings'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-primary'
-            }`}
+            className={`px-6 py-3 font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === 'bookings'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-primary'
+              }`}
           >
             Customer Bookings
           </button>

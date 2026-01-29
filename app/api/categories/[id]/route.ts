@@ -1,49 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
-
-const STORAGE_FILE = path.join(process.cwd(), 'data', 'categories.json')
-
-function getCategoriesFromStorage(): any[] {
-  try {
-    if (fs.existsSync(STORAGE_FILE)) {
-      const data = fs.readFileSync(STORAGE_FILE, 'utf-8')
-      return JSON.parse(data)
-    }
-  } catch (error) {
-    console.error('Error reading categories from storage:', error)
-  }
-  return []
-}
-
-function saveCategoriesToStorage(categories: any[]): void {
-  try {
-    const dataDir = path.dirname(STORAGE_FILE)
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true })
-    }
-    fs.writeFileSync(STORAGE_FILE, JSON.stringify(categories, null, 2))
-  } catch (error) {
-    console.error('Error saving categories to storage:', error)
-    throw error
-  }
-}
+import dbConnect from '@/lib/mongodb'
+import Category from '@/models/Category'
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    await dbConnect()
     const { id } = params
-    
-    // TODO: Replace with actual database delete
-    // Example with MongoDB:
-    // const result = await db.collection('categories').deleteOne({ _id: new ObjectId(id) })
-    
-    const categories = getCategoriesFromStorage()
-    const filtered = categories.filter((c: any) => c.id !== id)
-    saveCategoriesToStorage(filtered)
-    
+
+    // Support both MongoDB ObjectId and the old string IDs
+    let result = await Category.findByIdAndDelete(id).catch(() => null)
+    if (!result) {
+      result = await Category.findOneAndDelete({ id: id })
+    }
+
+    if (!result) {
+      return NextResponse.json({ error: 'Category not found' }, { status: 404 })
+    }
+
     return NextResponse.json({ message: 'Category deleted successfully' })
   } catch (error) {
     console.error('Error deleting category:', error)
@@ -56,22 +32,18 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    await dbConnect()
     const { id } = params
     const body = await request.json()
-    
-    // TODO: Replace with actual database update
-    // Example with MongoDB:
-    // const result = await db.collection('categories').updateOne(
-    //   { _id: new ObjectId(id) },
-    //   { $set: { ...body, updatedAt: new Date() } }
-    // )
-    
-    const categories = getCategoriesFromStorage()
-    const index = categories.findIndex((c: any) => c.id === id)
-    if (index !== -1) {
-      categories[index] = { ...categories[index], ...body, updatedAt: new Date().toISOString() }
-      saveCategoriesToStorage(categories)
-      return NextResponse.json({ message: 'Category updated successfully', ...categories[index] })
+
+    // Support both MongoDB ObjectId and the old string IDs
+    let category = await Category.findByIdAndUpdate(id, body, { new: true }).catch(() => null)
+    if (!category) {
+      category = await Category.findOneAndUpdate({ id: id }, body, { new: true })
+    }
+
+    if (category) {
+      return NextResponse.json({ message: 'Category updated successfully', category })
     } else {
       return NextResponse.json({ error: 'Category not found' }, { status: 404 })
     }
