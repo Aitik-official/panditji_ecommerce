@@ -3,6 +3,8 @@ import dbConnect from '@/lib/mongodb'
 import Puja from '@/models/Puja'
 import { defaultPujas } from '@/lib/seed-data'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     await dbConnect()

@@ -22,6 +22,7 @@ export interface IPuja extends Document {
 
 const PujaSchema: Schema = new Schema(
     {
+        id: { type: String },
         name: { type: String, required: true },
         price: { type: Number, required: true },
         category: { type: String, required: true },

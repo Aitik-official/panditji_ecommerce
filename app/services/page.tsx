@@ -109,7 +109,7 @@ function ServicesContent() {
 
   const fetchServices = async () => {
     try {
-      const response = await fetch('/api/pujas')
+      const response = await fetch('/api/pujas', { cache: 'no-store' })
       if (response.ok) {
         const data = await response.json()
         // Map pujas to services format with icons
@@ -184,8 +184,8 @@ function ServicesContent() {
                     key={cat}
                     onClick={() => handleCategoryChange(cat)}
                     className={`px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition-all duration-300 ${selectedCategory === cat
-                        ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg scale-105'
-                        : 'bg-card text-muted-foreground hover:bg-primary/10 hover:text-primary border border-border hover:border-primary/50'
+                      ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg scale-105'
+                      : 'bg-card text-muted-foreground hover:bg-primary/10 hover:text-primary border border-border hover:border-primary/50'
                       }`}
                   >
                     {cat}

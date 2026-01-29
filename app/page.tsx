@@ -161,7 +161,7 @@ export default function Home() {
 
   const fetchPujas = async () => {
     try {
-      const response = await fetch('/api/pujas')
+      const response = await fetch('/api/pujas', { cache: 'no-store' })
       if (response.ok) {
         const data = await response.json()
         const normalized = data.map((p: any) => ({

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import dbConnect from '@/lib/mongodb'
 import Puja from '@/models/Puja'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -11,15 +13,21 @@ export async function GET(
     const { id } = params
     console.log(`Fetching puja with ID: ${id}`)
 
-    // Support both MongoDB ObjectId and the old string IDs during transition
-    let puja = await Puja.findById(id).catch(() => null)
+    let puja = null
+
+    // 1. Try finding by MongoDB ObjectID if it looks like one
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      puja = await Puja.findById(id).catch(() => null)
+    }
+
+    // 2. If not found by ObjectID, try the custom 'id' field (only for legacy IDs like '1', '2')
     if (!puja) {
       console.log(`Puja not found by _id, trying custom 'id' field for: ${id}`)
-      puja = await Puja.findOne({ id: id })
+      puja = await Puja.findOne({ id: id }).catch(() => null)
     }
 
     if (puja) {
-      console.log(`Successfully found puja: ${puja.name}`)
+      console.log(`Successfully found puja: ${puja.name} (ID: ${puja._id})`)
     } else {
       console.warn(`Puja NOT found for ID: ${id}`)
     }
