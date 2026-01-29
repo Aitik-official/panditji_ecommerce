@@ -5,6 +5,7 @@ import { Plus, Edit, Trash2, X, Save } from 'lucide-react'
 
 interface Category {
   id: string
+  _id?: string
   name: string
   slug: string
   description: string
@@ -36,6 +37,7 @@ export function CategoryManager() {
           showOnNavbar: cat.showOnNavbar === true,
           description: cat.description || '',
           name: cat.name || '',
+          id: cat.id || cat._id,
         }))
         setCategories(normalizedCategories)
       } else {
@@ -140,10 +142,10 @@ export function CategoryManager() {
 
   const startEditing = (category: Category) => {
     setEditingId(category.id)
-    setFormData({ 
-      name: category.name || '', 
-      description: category.description || '', 
-      showOnNavbar: category.showOnNavbar === true 
+    setFormData({
+      name: category.name || '',
+      description: category.description || '',
+      showOnNavbar: category.showOnNavbar === true
     })
     setIsAdding(false)
   }
@@ -178,7 +180,7 @@ export function CategoryManager() {
             onClick={() => {
               setIsAdding(true)
               setEditingId(null)
-              setFormData({ name: '', description: '' })
+              setFormData({ name: '', description: '', showOnNavbar: false })
               setError('')
             }}
             className="px-4 py-2 bg-gradient-to-r from-primary to-accent text-white rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"

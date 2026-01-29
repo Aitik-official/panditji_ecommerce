@@ -5,17 +5,20 @@ import { ShoppingCart, Menu, X, Phone, Search, User, ChevronDown } from 'lucide-
 import { useState, useEffect } from 'react'
 import { AuthModal } from './auth-modal'
 
-interface NavbarCategory {
+interface Category {
   id: string
+  _id?: string
   name: string
   slug: string
+  description?: string // Added description as optional based on the edit
+  showOnNavbar?: boolean // Added showOnNavbar as optional based on the filter logic
 }
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
-  const [navbarCategories, setNavbarCategories] = useState<NavbarCategory[]>([])
+  const [navbarCategories, setNavbarCategories] = useState<Category[]>([]) // Changed type to Category[]
 
   useEffect(() => {
     fetchNavbarCategories()
@@ -25,14 +28,15 @@ export function Navbar() {
     try {
       const response = await fetch('/api/categories')
       if (response.ok) {
-        const categories = await response.json()
+        const categories: Category[] = await response.json() // Explicitly type categories
         // Only show categories that have showOnNavbar: true
         const navCategories = categories
-          .filter((cat: any) => cat.showOnNavbar === true)
-          .map((cat: any) => ({
-            id: cat.id,
-            name: cat.name,
-            slug: cat.slug,
+          .filter((cat: Category) => cat.showOnNavbar === true) // Use Category type
+          .map((cat: Category) => ({ // Use Category type
+            id: cat.id || cat._id || '', // Ensure id is always present
+            name: cat.name || '', // Ensure name is always present
+            slug: cat.slug || '', // Ensure slug is always present
+            description: cat.description || '', // Added description
           }))
         setNavbarCategories(navCategories)
       }

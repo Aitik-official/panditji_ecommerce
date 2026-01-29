@@ -5,14 +5,17 @@ import { Edit, Trash2, Image as ImageIcon, Video, Search, Filter } from 'lucide-
 
 interface Puja {
   id: string
+  _id?: string
   name: string
   description: string
+  shortDescription?: string
+  fullDescription?: string
   price: number
   category: string
   duration: string
   image: string | null
   video: string | null
-  features: string[]
+  features?: string[]
   createdAt: string
 }
 
@@ -31,7 +34,11 @@ export function PujaList() {
       const response = await fetch('/api/pujas')
       if (response.ok) {
         const data = await response.json()
-        setPujas(data)
+        const normalizedPujas = data.map((p: any) => ({
+          ...p,
+          id: p.id || p._id
+        }))
+        setPujas(normalizedPujas)
       }
     } catch (error) {
       console.error('Error fetching pujas:', error)
@@ -62,7 +69,7 @@ export function PujaList() {
 
   const filteredPujas = pujas.filter(puja => {
     const matchesSearch = puja.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         puja.description.toLowerCase().includes(searchQuery.toLowerCase())
+      puja.description.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = filterCategory === 'all' || puja.category === filterCategory
     return matchesSearch && matchesCategory
   })
@@ -161,20 +168,20 @@ export function PujaList() {
                         {puja.name}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
-                        {puja.description}
+                        {puja.shortDescription || puja.description}
                       </p>
                       <div className="flex flex-wrap items-center gap-4 text-sm">
                         <span className="px-2 py-1 bg-primary/10 text-primary rounded-full font-semibold">
                           {puja.category}
                         </span>
                         <span className="text-gray-600 dark:text-gray-400">
-                          ₹{puja.price.toLocaleString()}
+                          ₹{puja.price?.toLocaleString()}
                         </span>
                         <span className="text-gray-600 dark:text-gray-400">
                           {puja.duration}
                         </span>
                       </div>
-                      {puja.features.length > 0 && (
+                      {puja.features && puja.features.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {puja.features.slice(0, 3).map((feature, idx) => (
                             <span

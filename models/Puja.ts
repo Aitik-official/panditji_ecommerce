@@ -15,6 +15,7 @@ export interface IPuja extends Document {
     japaOptions?: { label: string; value: string }[];
     specifications?: { label: string; value: string }[];
     reviews?: { user: string; rating: number; comment: string; date?: string }[];
+    features?: string[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -52,6 +53,7 @@ const PujaSchema: Schema = new Schema(
                 date: { type: String },
             },
         ],
+        features: { type: [String], default: [] },
     },
     { timestamps: true }
 );
